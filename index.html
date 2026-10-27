@@ -1574,16 +1574,27 @@
         var b = makePDF();
         if (b) saveFile("AB-Crackers-order-2026.pdf", b);
       }
-      var LOG_URL = "https://script.google.com/macros/s/AKfycbxdhXi0d51isFJZOdT3u6V6hS6EtuqmXacQcSqDaVHMRBQViij30EXU2ZKAju0S-P11WA/exec",
+      var LOG_URL =
+          "https://script.google.com/macros/s/AKfycbxdhXi0d51isFJZOdT3u6V6hS6EtuqmXacQcSqDaVHMRBQViij30EXU2ZKAju0S-P11WA/exec",
         WA_NUM = "919843456622";
+
+      //Log Orders
+
+      var LOG_URL =
+        "https://script.google.com/macros/s/AKfycbxdhXi0d51isFJZOdT3u6V6hS6EtuqmXacQcSqDaVHMRBQViij30EXU2ZKAju0S-P11WA/exec";
+
       function logOrder() {
         if (!LOG_URL) return;
-        var it = [],
-          t = 0;
+
+        var it = [];
+        var t = 0;
+
         for (var k in qty) {
-          var m = items[k],
-            a = qty[k] * m.price;
+          var m = items[k];
+          var a = qty[k] * m.price;
+
           t += a;
+
           it.push({
             sno: m.sno,
             name: m.name,
@@ -1593,23 +1604,34 @@
             amount: a,
           });
         }
+
+        var orderData = {
+          time: new Date().toISOString(),
+          name: cust.n,
+          phone: cust.p,
+          address: cust.a,
+          items: it,
+          total: Math.round(t * 100) / 100,
+          page: location.href,
+        };
+
         try {
           fetch(LOG_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              time: new Date().toISOString(),
-              name: cust.n,
-              phone: cust.p,
-              address: cust.a,
-              items: it,
-              total: Math.round(t * 100) / 100,
-              page: location.href,
-            }),
+            headers: {
+              "Content-Type": "text/plain;charset=UTF-8",
+            },
+            body: JSON.stringify(orderData),
+            mode: "no-cors",
             keepalive: true,
-          }).catch(function () {});
-        } catch (e) {}
+          }).catch(function (error) {
+            console.error("Order submission failed:", error);
+          });
+        } catch (e) {
+          console.error("Order logging error:", e);
+        }
       }
+
       function sendWA() {
         if (!Object.keys(qty).length) {
           msg("Select some items first.");
